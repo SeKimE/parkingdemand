@@ -1,17 +1,9 @@
-#%%
+ 
 import pandas as pd
 import numpy as np
-import seaborn as sns
-from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
-import matplotlib.pyplot as plt
 
-#폰트 설정          
-from matplotlib import rc    
-%matplotlib inline          
-rc('font', family='Gothic' )
-plt.rcParams['axes.unicode_minus'] = False  
 
 
 train_df=pd.read_csv('train.csv')
@@ -28,7 +20,7 @@ train_df.loc[train_df.임대료=='-', '임대료'] = np.nan
 test_df.loc[test_df.임대료=='-', '임대료'] = np.nan
 train_df['임대료'] = train_df['임대료'].astype(float)
 test_df['임대료'] = test_df['임대료'].astype(float)
-#%%
+ 
 
 # EDA - katie
 
@@ -120,11 +112,11 @@ total_age
 
 
 
-#%%
+ 
 test_df.loc[test_df.단지코드.isin(['C2411']) & test_df.자격유형.isnull(), '자격유형'] = 'A'
 test_df.loc[test_df.단지코드.isin(['C2253']) & test_df.자격유형.isnull(), '자격유형'] = 'C'
 
-#%%
+ 
 unique_cols = ['총세대수', '지역', '공가수', 
                '지하철',
                '버스',
@@ -133,7 +125,7 @@ unique_cols = ['총세대수', '지역', '공가수',
 train_agg = train_df.set_index('단지코드')[unique_cols].drop_duplicates()
 test_agg = test_df.set_index('단지코드')[[col for col in unique_cols if col!='등록차량수']].drop_duplicates()
 
-#%%
+ 
 
 # 이걸 보고 순서대로 0,1,2,3,4, 입력해보기
 df=pd.DataFrame(train_agg.groupby('지역')['등록차량수'].mean().sort_values())
@@ -141,7 +133,7 @@ for i,v in enumerate(df.index):
     train_agg.loc[train_agg['지역']==v,'지역']=i
     test_agg.loc[test_agg['지역']==v,'지역']=i
 
-#%%
+ 
 for i in train_df['자격유형'].unique():
     train_df['자격유형_{}'.format(i)]=0
 
@@ -163,7 +155,7 @@ train_df_2=train_df[['단지코드','자격유형_A', '자격유형_B', '자격�
        '자격유형_L', '자격유형_M', '자격유형_N', '자격유형_O', '공급유형_국민임대', '공급유형_공공임대(50년)',
        '공급유형_영구임대', '공급유형_임대상가', '공급유형_공공임대(10년)', '공급유형_공공임대(분납)',
        '공급유형_장기전세', '공급유형_공공분양', '공급유형_행복주택', '공급유형_공공임대(5년)']].drop_duplicates()
-#%%
+ 
 
 for i in test_df['자격유형'].unique():
     test_df['자격유형_{}'.format(i)]=0
@@ -181,19 +173,19 @@ for i in test_df['단지코드'].unique():
     for z in sup_columns:
         test_df.loc[test_df['단지코드']==i,'공급유형_{}'.format(z)]=df[df['공급유형']==z]['전용면적별세대수'].sum()/df['전용면적별세대수'].sum()
 
-#%%
+ 
 test_df_2=test_df[['단지코드','자격유형_H', '자격유형_A', '자격유형_E', '자격유형_C', '자격유형_D',
        '자격유형_G', '자격유형_I', '자격유형_J', '자격유형_K', '자격유형_L', '자격유형_M', '자격유형_N',
        '공급유형_국민임대', '공급유형_영구임대', '공급유형_임대상가', '공급유형_공공임대(50년)',
        '공급유형_공공임대(10년)', '공급유형_공공임대(분납)', '공급유형_행복주택']].drop_duplicates()
 
-#%%
+ 
 train_agg=pd.merge(train_agg,train_df_2,on='단지코드')
 test_agg=pd.merge(test_agg,test_df_2,on='단지코드')
 
 train_agg=train_agg.fillna(0)
 test_agg=test_agg.fillna(0)
-#%%
+ 
 train=train_agg.drop(['단지코드'],axis=1)
 train=train_agg[['총세대수','지역', '공가수', '지하철', '버스',
        '단지내주차면수', '자격유형_H', '자격유형_A', '자격유형_E',
@@ -201,18 +193,15 @@ train=train_agg[['총세대수','지역', '공가수', '지하철', '버스',
        '자격유형_M', '자격유형_N', '공급유형_국민임대', '공급유형_영구임대', '공급유형_임대상가',
        '공급유형_공공임대(50년)', '공급유형_공공임대(10년)', '공급유형_공공임대(분납)', '공급유형_행복주택', '등록차량수']]
 
-train["등록차량수_로그"] = train["등록차량수"].map(lambda i:np.log(i)if i>0 else 0) 
-train.drop('등록차량수', axis= 1, inplace=True)
-
 test=test_agg.drop(['단지코드'],axis=1)
 
 
-#%%
+ 
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error
 
 
-#%%
+ 
 
 
 
@@ -221,11 +210,11 @@ data_dmatrix = xgb.DMatrix(data=X,label=y)
 
 
 
-#%%
+ 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=10)
 
-xg_reg = xgb.XGBRegressor(objective ='reg:linear',eval_metric='mae', colsample_bytree = 1, learning_rate = 0.3, max_depth = 4, alpha = 5, n_estimators = 10)
+xg_reg = xgb.XGBRegressor(objective ='reg:linear',eval_metric='mae', colsample_bytree = 1, learning_rate = 0.5, max_depth = 4, alpha = 5, n_estimators = 9)
 #
 xg_reg.fit(X_train,y_train)
 
@@ -236,28 +225,8 @@ preds = xg_reg.predict(X_test)
 mae = np.sqrt(mean_absolute_error(y_test, preds))
 print("MAE: %f" % (mae))
 
-#%%
-# from sklearn.ensemble import GradientBoostingRegressor
-# regressor = GradientBoostingRegressor(n_estimators=2000, learning_rate=0.05, max_depth=33, min_samples_leaf=15, min_samples_split=10, random_state=42)
-# regressor.fit(X_train, y_train)
-# preds = regressor.predict(X_test)
 
-
-# mae = np.sqrt(mean_absolute_error(y_test, preds))
-# print("MAE: %f" % (mae))
-
-
-# regressor.fit(X,y)
-
-# preds = regressor.predict(np.array(test))
-
-# sub_df=test_agg[['단지코드']]
-# sub_df['Y']=preds
-# sub_df.columns=['code','num']
-# sub_df.to_csv('submission_GBR3.csv',index=False)
-
-
-#%%
+ 
 
 
 xg_reg.fit(X,y)
@@ -267,22 +236,21 @@ preds = xg_reg.predict(np.array(test))
 sub_df=test_agg[['단지코드']]
 sub_df['Y']=preds
 sub_df.columns=['code','num']
-sub_df['num'] = np.exp(sub_df['num'])
-sub_df.to_csv('submission_log.csv',index=False)
+sub_df.to_csv('submission.csv',index=False)
 
 
 
 
 
 
-# %%
+ 
 import warnings
 warnings.filterwarnings('ignore')
 
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 
-xg_reg = xgb.XGBRegressor(objective ='reg:linear',eval_metric='mae', colsample_bytree = 1, learning_rate = 0.3, max_depth = 4,  n_estimators = 10)
+xg_reg = xgb.XGBRegressor(objective ='reg:linear',eval_metric='mae', colsample_bytree = 1, learning_rate = 0.4, max_depth = 3,  n_estimators = 10)
 
 avg=0
 for i in range(20):
@@ -293,4 +261,4 @@ for i in range(20):
 
 print(avg/20)
 
-# %%
+ 
