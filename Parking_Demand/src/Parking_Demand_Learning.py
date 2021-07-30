@@ -5,11 +5,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-
-train_df=pd.read_csv('train.csv')
-test_df=pd.read_csv('test.csv')
-age_gender_info=pd.read_csv('age_gender_info.csv')
-sample_submission=pd.read_csv('sample_submission.csv')
+dir = '../data/dacon_data/'
+train_df=pd.read_csv(dir+'train.csv')
+test_df=pd.read_csv(dir+'test.csv')
+age_gender_info=pd.read_csv(dir+'age_gender_info.csv')
+sample_submission=pd.read_csv(dir+'sample_submission.csv')
 
 train_df.loc[train_df.임대보증금=='-', '임대보증금'] = np.nan
 test_df.loc[test_df.임대보증금=='-', '임대보증금'] = np.nan
@@ -236,7 +236,7 @@ preds = xg_reg.predict(np.array(test))
 sub_df=test_agg[['단지코드']]
 sub_df['Y']=preds
 sub_df.columns=['code','num']
-sub_df.to_csv('submission.csv',index=False)
+sub_df.to_csv('../result/submission.csv',index=False)
 
 
 
